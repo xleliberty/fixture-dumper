@@ -89,6 +89,7 @@ abstract class AbstractGenerator
             $preparedData[$this->namingStrategy->modelName($model, $metadata)] = $data;
         }
 
+
         return $this->doGenerate($metadata, $preparedData, $options);
     }
 
@@ -298,18 +299,36 @@ abstract class AbstractGenerator
      */
     protected function readProperty($object, $property)
     {
+        $ref = new \ReflectionClass($object);
+
         $camelProp = ucfirst($property);
         $getter = 'get'.$camelProp;
         $isser = 'is'.$camelProp;
 
-        if (method_exists($object, $getter)) {
-            return $object->$getter();
-        } elseif (method_exists($object, $isser)) {
-            return $object->$isser();
-        } elseif (property_exists($object, $property)) {
-            return $object->$property;
+        try {
+            $g = $ref->getMethod($getter);
+            if ($g->isPublic()) {
+                return $object->$getter();
+            }
+
+            $g = $ref->getMethod($isser);
+            if ($g->isPublic()) {
+                return $object->$isser();
+            }
+        } catch (\ReflectionException $e) {
+            //do nothing on method missing.?
         }
 
-        throw new InvalidPropertyException(sprintf('Neither property "%s" nor method "%s()" nor method "%s()" exists in class "%s"', $property, $getter, $isser, get_class($object)));
+
+        try {
+            $p = $ref->getProperty($property);
+            if ($p->isPublic()) {
+                return $object->$property;
+            }
+        } catch (\ReflectionException $e) {
+            return null;
+        }
+
+        return  null;
     }
 }
