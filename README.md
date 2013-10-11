@@ -42,6 +42,22 @@ $dumper->dump('/your/workspace/src/Acme/DemoBundle/DataFixtures/ORM', 'array');
 
 #### Options
 
+#### Filtering entities
+It's now possible to filter dumped entities using 3 methods
+
+$dumper->addNamespace('Some\Name\Space'); 
+This will dump only entities in this namespace
+
+$dumper->addToWhitelist('superentity');
+$dumper->addToWhitelist(array('superentity','otherone'));
+
+This will dump only superentity;
+
+$dumper->addToBlacklist('badentity');
+$dumper->addToBlacklist(array('bad1','bad2'));
+This will not dump some entities
+
+
 `AbstractDumper#dump` accepts a third `$options` argument that is an array
 with the following keys:
 
