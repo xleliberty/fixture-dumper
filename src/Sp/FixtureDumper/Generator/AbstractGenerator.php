@@ -310,7 +310,11 @@ abstract class AbstractGenerator
             if ($g->isPublic()) {
                 return $object->$getter();
             }
+        } catch (\ReflectionException $e) {
+            //do nothing on method missing.?
+        }
 
+        try {
             $g = $ref->getMethod($isser);
             if ($g->isPublic()) {
                 return $object->$isser();
@@ -318,7 +322,6 @@ abstract class AbstractGenerator
         } catch (\ReflectionException $e) {
             //do nothing on method missing.?
         }
-
 
         try {
             $p = $ref->getProperty($property);
@@ -331,4 +334,61 @@ abstract class AbstractGenerator
 
         return  null;
     }
+
+    /**
+     * Reads a property from an object.
+     *
+     * @param $object
+     * @param $property
+     *
+     * @return mixed
+     * @throws InvalidPropertyException
+     */
+    protected function TmpreadProperty($object, $property)
+    {
+        $ref = new \ReflectionClass($object);
+        $camelProp = ucfirst($property);
+        $getter = 'get'.$camelProp;
+        $isser = 'is'.$camelProp;
+
+        try {
+            $g = $ref->getMethod($getter);
+
+            if ($g->isPublic()) {
+                return $object->$getter();
+            }
+
+            $g = $ref->getMethod($isser);
+            if ($g->isPublic()) {
+                return $object->$isser();
+            }
+        } catch (\ReflectionException $e) {
+            //do nothing on method missing.?
+        }
+
+        try {
+
+            $g = $ref->getMethod($isser);
+            if ($g->isPublic()) {
+                return $object->$isser();
+            }
+        } catch (\ReflectionException $e) {
+            //do nothing on method missing.?
+        }
+
+
+//dsd($property);
+
+        try {
+            $p = $ref->getProperty($property);
+            if ($p->isPublic()) {
+                return $object->$property;
+            }
+        } catch (\ReflectionException $e) {
+            return null;
+        }
+
+        return  null;
+    }
+
 }
