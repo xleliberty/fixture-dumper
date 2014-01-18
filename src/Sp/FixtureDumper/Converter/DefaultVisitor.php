@@ -14,38 +14,14 @@ namespace Sp\FixtureDumper\Converter;
 /**
  * @author Martin Parsiegla <martin.parsiegla@gmail.com>
  */
-class DefaultVisitor implements VisitorInterface
+class PhpVisitor extends DefaultVisitor
 {
     /**
      * {@inheritdoc}
      */
     public function visitString($string)
     {
-        return $string;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function visitDouble($double)
-    {
-        return $double;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function visitInteger($integer)
-    {
-        return $integer;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function visitBoolean($boolean)
-    {
-        return $boolean ? 'true' : 'false';
+        return sprintf("'%s'", addslashes($string));
     }
 
     /**
@@ -53,15 +29,7 @@ class DefaultVisitor implements VisitorInterface
      */
     public function visitArray(array $array)
     {
-        return $array;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function visitReference($reference)
-    {
-        return $reference;
+        return sprintf("unserialize('%s')", serialize($array));
     }
 
     /**
@@ -77,6 +45,6 @@ class DefaultVisitor implements VisitorInterface
      */
     public function visitNull($data)
     {
-        return null;
+        return 'null';
     }
 }
