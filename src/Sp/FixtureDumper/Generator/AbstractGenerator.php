@@ -88,7 +88,11 @@ abstract class AbstractGenerator
         }
 
         $preparedData = array();
+
         foreach ($models as $model) {
+            if (get_class($model) !== $metadata->getName()) {
+                continue;
+            }
             $data = array();
             $data['fields'] = $this->processFieldNames($metadata, $model);
             $data['associations'] = $this->processAssociationNames($metadata, $model);
