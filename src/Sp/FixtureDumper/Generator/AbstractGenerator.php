@@ -50,6 +50,13 @@ abstract class AbstractGenerator
      */
     protected $models;
 
+    /**
+     * locale if needed
+     *
+     * @var string
+     */
+    protected $defaultLocale;
+
 
     /**
      * @param \Doctrine\Common\Persistence\ObjectManager|null   $manager
@@ -189,6 +196,8 @@ abstract class AbstractGenerator
         return $fixture;
     }
 
+
+
     /**
      * Creates the filename for this fixture.
      *
@@ -218,6 +227,8 @@ abstract class AbstractGenerator
      */
     protected function processFieldNames(ClassMetadata $metadata, $model)
     {
+        $ref = new \ReflectionClass($model);
+
         $data = array();
         foreach ($metadata->getFieldNames() as $fieldName) {
             if ($metadata->isIdentifier($fieldName)) {
@@ -225,6 +236,19 @@ abstract class AbstractGenerator
             }
 
             $data[$fieldName] = $this->navigator->accept($this->getVisitor(), $this->readProperty($model, $fieldName));
+        }
+
+        if (isset($this->defaultLocale)) {
+            $isLocalisable = false;
+
+            try {
+                $isLocalisable = $ref->getMethod('setTranslatableLocale');
+                if ($isLocalisable) {
+                    $data['locale'] = $this->defaultLocale;
+                }
+            } catch (\ReflectionException $e) {
+
+            }
         }
 
         return $data;
@@ -325,6 +349,7 @@ abstract class AbstractGenerator
 
         try {
             $p = $ref->getProperty($property);
+
             if ($p->isPublic()) {
                 return $object->$property;
             }
@@ -336,59 +361,26 @@ abstract class AbstractGenerator
     }
 
     /**
-     * Reads a property from an object.
+     * Gets the locale if needed.
      *
-     * @param $object
-     * @param $property
-     *
-     * @return mixed
-     * @throws InvalidPropertyException
+     * @return string
      */
-    protected function TmpreadProperty($object, $property)
+    public function getDefaultLocale()
     {
-        $ref = new \ReflectionClass($object);
-        $camelProp = ucfirst($property);
-        $getter = 'get'.$camelProp;
-        $isser = 'is'.$camelProp;
-
-        try {
-            $g = $ref->getMethod($getter);
-
-            if ($g->isPublic()) {
-                return $object->$getter();
-            }
-
-            $g = $ref->getMethod($isser);
-            if ($g->isPublic()) {
-                return $object->$isser();
-            }
-        } catch (\ReflectionException $e) {
-            //do nothing on method missing.?
-        }
-
-        try {
-
-            $g = $ref->getMethod($isser);
-            if ($g->isPublic()) {
-                return $object->$isser();
-            }
-        } catch (\ReflectionException $e) {
-            //do nothing on method missing.?
-        }
-
-
-//dsd($property);
-
-        try {
-            $p = $ref->getProperty($property);
-            if ($p->isPublic()) {
-                return $object->$property;
-            }
-        } catch (\ReflectionException $e) {
-            return null;
-        }
-
-        return  null;
+        return $this->defaultLocale;
     }
 
+    /**
+     * Sets the locale if needed.
+     *
+     * @param string $defaultLocale the default locale
+     *
+     * @return self
+     */
+    public function setDefaultLocale($defaultLocale)
+    {
+        $this->defaultLocale = $defaultLocale;
+
+        return $this;
+    }
 }
